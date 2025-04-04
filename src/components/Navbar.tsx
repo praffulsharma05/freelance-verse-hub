@@ -5,13 +5,18 @@ import { Search, Menu, X, User, Shield, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 
-const Navbar = () => {
+interface NavbarProps {
+  isAuthenticated?: boolean;
+}
+
+const Navbar = ({ isAuthenticated: propIsAuthenticated }: NavbarProps = {}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   
-  const isAuthenticated = !!user;
+  // Use the prop if provided, otherwise use the auth context
+  const isAuthenticated = propIsAuthenticated !== undefined ? propIsAuthenticated : !!user;
 
   const handleSignOut = async () => {
     await signOut();
