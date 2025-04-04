@@ -9,11 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UserRole } from '@/types/supabase';
 import { toast } from 'sonner';
 
+// Admin email constant (must match the one in AuthContext)
+const ADMIN_EMAIL = "prafful.sharma.2021@ecajmer.ac.in";
+
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,7 +25,12 @@ export const LoginForm = () => {
     
     try {
       await signIn(email, password);
-      navigate('/home');
+      // Redirect admin users directly to the admin panel
+      if (email === ADMIN_EMAIL) {
+        navigate('/admin');
+      } else {
+        navigate('/home');
+      }
     } catch (error: any) {
       console.error('Login error:', error);
       // Error message is handled in the AuthContext

@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, FileText, CircleDollarSign, 
   Settings, LogOut, Menu, X, ChevronDown, ChevronUp 
@@ -8,11 +8,22 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut, user, isAdmin } = useAuth();
+  
+  // Check admin status on mount and redirect if not admin
+  useEffect(() => {
+    if (!isAdmin) {
+      toast.error("Unauthorized access. You must be an admin to view this page.");
+      navigate('/');
+    }
+  }, [isAdmin, navigate]);
   
   const navItems = [
     { icon: LayoutDashboard, name: 'Dashboard', path: '/admin' },
@@ -22,9 +33,10 @@ const AdminLayout = () => {
     { icon: Settings, name: 'Settings', path: '/admin/settings' },
   ];
   
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut();
     toast.success("Logged out successfully");
-    // This will be replaced with actual authentication logic
+    navigate('/');
   };
   
   return (
@@ -90,12 +102,12 @@ const AdminLayout = () => {
             >
               <div className="flex-shrink-0">
                 <div className="h-8 w-8 rounded-full bg-colancer-purple flex items-center justify-center text-white">
-                  A
+                  {user?.email?.charAt(0)?.toUpperCase() || 'A'}
                 </div>
               </div>
               <div className="ml-3 flex-1">
                 <p className="text-sm font-medium">Admin User</p>
-                <p className="text-xs text-gray-500">admin@colancer.com</p>
+                <p className="text-xs text-gray-500">{user?.email || 'admin@colancer.com'}</p>
               </div>
               {userMenuOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>

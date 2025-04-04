@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +17,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const ADMIN_EMAIL = "prafful.sharma.2021@ecajmer.ac.in";
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -26,7 +27,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -38,7 +38,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event, session?.user?.email);
       setSession(session);
@@ -68,6 +67,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Error fetching profile:', error);
         setProfile(null);
       } else {
+        if (user?.email === ADMIN_EMAIL) {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ role: 'admin' })
+            .eq('id', userId);
+          
+          if (updateError) {
+            console.error('Error updating profile to admin role:', updateError);
+          } else {
+            data.role = 'admin';
+            console.log("Updated user to admin role:", data);
+          }
+        }
+        
         setProfile(data);
         console.log("Profile fetched:", data);
       }
@@ -86,12 +99,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (error) {
         if (error.message === 'Email not confirmed') {
-          // Handle email not confirmed error specifically
-          toast({
-            variant: "destructive",
-            title: "Email not confirmed",
-            description: "Please check your email to confirm your account or contact support.",
-          });
+          if (email === ADMIN_EMAIL) {
+            console.log("Admin login - bypassing email confirmation check");
+            const { error: secondAttemptError } = await supabase.auth.signInWithPassword({ email, password });
+            if (secondAttemptError) {
+              toast({
+                variant: "destructive",
+                title: "Sign in failed",
+                description: secondAttemptError.message,
+              });
+              throw secondAttemptError;
+            } else {
+              toast({
+                title: "Welcome Admin!",
+                description: "You've successfully signed in.",
+              });
+              return;
+            }
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Email not confirmed",
+              description: "Please check your email to confirm your account or contact support.",
+            });
+          }
         } else {
           toast({
             variant: "destructive",
@@ -101,10 +132,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         throw error;
       } else {
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully signed in.",
-        });
+        if (email === ADMIN_EMAIL) {
+          toast({
+            title: "Welcome Admin!",
+            description: "You've successfully signed in to the admin panel.",
+          });
+        } else {
+          toast({
+            title: "Welcome back!",
+            description: "You've successfully signed in.",
+          });
+        }
       }
     } catch (error: any) {
       console.error("Login error:", error);
@@ -170,7 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const isAdmin = profile?.role === 'admin';
+  const isAdmin = user?.email === ADMIN_EMAIL || profile?.role === 'admin';
 
   const value = {
     user,
