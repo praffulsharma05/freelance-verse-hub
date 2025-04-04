@@ -34,6 +34,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (!user) {
+    console.log("User not authenticated, redirecting to home");
     return <Navigate to="/" state={{ from: location }} replace />;
   }
   
@@ -42,14 +43,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 // Admin route component
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAdmin, isLoading } = useAuth();
+  const { isAdmin, isLoading, user } = useAuth();
   const location = useLocation();
   
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
   
+  if (!user) {
+    console.log("User not authenticated, redirecting to home");
+    return <Navigate to="/" state={{ from: location }} replace />;
+  }
+  
   if (!isAdmin) {
+    console.log("User not admin, redirecting to home");
     return <Navigate to="/home" state={{ from: location }} replace />;
   }
   

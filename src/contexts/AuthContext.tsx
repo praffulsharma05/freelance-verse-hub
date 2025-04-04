@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -57,18 +58,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function fetchProfile(userId: string) {
     try {
       setIsLoading(true);
-      // This line had the type error - we need to use the correct query syntax
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
       
-      if (error) throw error;
-      
-      setProfile(data);
+      if (error) {
+        console.error('Error fetching profile:', error);
+        setProfile(null);
+      } else {
+        setProfile(data);
+        console.log("Profile fetched:", data);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
+      setProfile(null);
     } finally {
       setIsLoading(false);
     }
@@ -78,17 +83,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setIsLoading(true);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully signed in.",
-      });
+      
+      if (error) {
+        if (error.message === 'Email not confirmed') {
+          // Handle email not confirmed error specifically
+          toast({
+            variant: "destructive",
+            title: "Email not confirmed",
+            description: "Please check your email to confirm your account or contact support.",
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Sign in failed",
+            description: error.message,
+          });
+        }
+        throw error;
+      } else {
+        toast({
+          title: "Welcome back!",
+          description: "You've successfully signed in.",
+        });
+      }
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Sign in failed",
-        description: error.message,
-      });
+      console.error("Login error:", error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -98,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signUp(email: string, password: string, userData: Partial<Profile>) {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signUp({ 
+      const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
@@ -106,7 +125,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             username: userData.username,
             full_name: userData.full_name,
             role: userData.role || 'freelancer'
-          }
+          },
+          emailRedirectTo: window.location.origin + '/home'
         }
       });
       
@@ -114,8 +134,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       toast({
         title: "Account created",
-        description: "Welcome to Co-Lancer! Your account has been created.",
+        description: "Welcome to Co-Lancer! Please check your email to confirm your account.",
       });
+
+      return;
     } catch (error: any) {
       toast({
         variant: "destructive",

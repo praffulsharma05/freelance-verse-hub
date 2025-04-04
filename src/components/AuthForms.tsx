@@ -23,8 +23,10 @@ export const LoginForm = () => {
     try {
       await signIn(email, password);
       navigate('/home');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
+      // Error message is handled in the AuthContext
+    } finally {
       setIsLoading(false);
     }
   };
@@ -84,10 +86,13 @@ export const SignupForm = () => {
         full_name: fullName,
         role
       });
-      toast.success('Account created successfully! Please sign in.');
-      navigate('/home');
-    } catch (error) {
+      
+      // Don't navigate automatically after signup since email confirmation is required
+      // We'll just show a toast message (which is handled in the AuthContext)
+    } catch (error: any) {
       console.error('Registration failed:', error);
+      // Error message is handled in the AuthContext
+    } finally {
       setIsLoading(false);
     }
   };
@@ -159,6 +164,10 @@ export const SignupForm = () => {
       >
         {isLoading ? 'Creating Account...' : 'Register'}
       </Button>
+      
+      <div className="text-center text-sm text-gray-500 mt-2">
+        After registration, you'll need to confirm your email before logging in
+      </div>
     </form>
   );
 };

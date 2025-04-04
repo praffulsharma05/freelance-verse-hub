@@ -1,15 +1,22 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Menu, X, User, Shield } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, Menu, X, User, Shield, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
-const Navbar = ({ isAuthenticated = false }: { isAuthenticated?: boolean }) => {
+const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { user, profile, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
   
-  // For demo purposes, we're assuming the current user is an admin
-  const isAdmin = true;
+  const isAuthenticated = !!user;
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <nav className="bg-black text-white shadow-md w-full">
@@ -22,10 +29,14 @@ const Navbar = ({ isAuthenticated = false }: { isAuthenticated?: boolean }) => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="hover:text-colancer-lightpurple transition">Home</Link>
-            <Link to="/projects" className="hover:text-colancer-lightpurple transition">Projects</Link>
-            <Link to="/circular" className="hover:text-colancer-lightpurple transition">Circular</Link>
-            <Link to="/competition" className="hover:text-colancer-lightpurple transition">Competition</Link>
+            <Link to={isAuthenticated ? "/home" : "/"} className="hover:text-colancer-lightpurple transition">Home</Link>
+            {isAuthenticated && (
+              <>
+                <Link to="/projects" className="hover:text-colancer-lightpurple transition">Projects</Link>
+                <Link to="/circular" className="hover:text-colancer-lightpurple transition">Circular</Link>
+                <Link to="/competition" className="hover:text-colancer-lightpurple transition">Competition</Link>
+              </>
+            )}
           </div>
 
           {/* Search Bar */}
@@ -58,9 +69,16 @@ const Navbar = ({ isAuthenticated = false }: { isAuthenticated?: boolean }) => {
                     <User size={20} />
                   </div>
                 </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="hover:text-colancer-lightpurple transition"
+                  title="Sign out"
+                >
+                  <LogOut size={20} />
+                </button>
               </div>
             ) : (
-              <Link to="/register" className="hover:text-colancer-lightpurple transition">Register</Link>
+              <Link to="/" className="hover:text-colancer-lightpurple transition">Login / Register</Link>
             )}
           </div>
 
@@ -86,20 +104,31 @@ const Navbar = ({ isAuthenticated = false }: { isAuthenticated?: boolean }) => {
               />
               <Search className="absolute right-3 top-2 text-gray-400" size={18} />
             </div>
-            <Link to="/" className="block py-2 hover:text-colancer-lightpurple transition">Home</Link>
-            <Link to="/projects" className="block py-2 hover:text-colancer-lightpurple transition">Projects</Link>
-            <Link to="/circular" className="block py-2 hover:text-colancer-lightpurple transition">Circular</Link>
-            <Link to="/competition" className="block py-2 hover:text-colancer-lightpurple transition">Competition</Link>
-            {isAdmin && (
-              <Link to="/admin" className="block py-2 hover:text-colancer-lightpurple transition flex items-center">
-                <Shield size={18} className="mr-2" />
-                Admin Panel
-              </Link>
-            )}
+            <Link to={isAuthenticated ? "/home" : "/"} className="block py-2 hover:text-colancer-lightpurple transition">Home</Link>
             {isAuthenticated ? (
-              <Link to="/profile" className="block py-2 hover:text-colancer-lightpurple transition">Profile</Link>
+              <>
+                <Link to="/projects" className="block py-2 hover:text-colancer-lightpurple transition">Projects</Link>
+                <Link to="/circular" className="block py-2 hover:text-colancer-lightpurple transition">Circular</Link>
+                <Link to="/competition" className="block py-2 hover:text-colancer-lightpurple transition">Competition</Link>
+                {isAdmin && (
+                  <Link to="/admin" className="block py-2 hover:text-colancer-lightpurple transition flex items-center">
+                    <Shield size={18} className="mr-2" />
+                    Admin Panel
+                  </Link>
+                )}
+                <Link to="/profile" className="block py-2 hover:text-colancer-lightpurple transition">Profile</Link>
+                <button
+                  onClick={handleSignOut}
+                  className="block w-full text-left py-2 hover:text-colancer-lightpurple transition"
+                >
+                  <div className="flex items-center">
+                    <LogOut size={18} className="mr-2" />
+                    Sign out
+                  </div>
+                </button>
+              </>
             ) : (
-              <Link to="/register" className="block py-2 hover:text-colancer-lightpurple transition">Register</Link>
+              <Link to="/" className="block py-2 hover:text-colancer-lightpurple transition">Login / Register</Link>
             )}
           </div>
         )}
