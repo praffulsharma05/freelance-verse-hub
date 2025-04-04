@@ -6,10 +6,12 @@ import AIChatBot from '@/components/AIChatBot';
 import FloatingMessage from '@/components/FloatingMessage';
 import { Button } from '@/components/ui/button';
 import { Pencil, Linkedin, Phone, Mail, Share } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Profile = () => {
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const { user, profile } = useAuth();
   
   const handleCoverUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -86,8 +88,12 @@ const Profile = () => {
             
             {/* Profile Info */}
             <div className="flex-grow pt-4 md:pt-16">
-              <h1 className="text-2xl md:text-3xl font-bold mb-1">John Doe</h1>
-              <p className="text-gray-600 mb-3">Full Stack Developer | React | Node.js | MongoDB</p>
+              <h1 className="text-2xl md:text-3xl font-bold mb-1">
+                {profile?.full_name || user?.user_metadata?.full_name || profile?.username || user?.user_metadata?.username || 'User'}
+              </h1>
+              <p className="text-gray-600 mb-3">
+                {profile?.role === 'freelancer' ? 'Freelancer' : profile?.role === 'client' ? 'Client' : 'User'} | {profile?.bio || 'No bio added yet'}
+              </p>
               <div className="flex flex-wrap gap-2 mb-4">
                 <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">React</span>
                 <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Node.js</span>

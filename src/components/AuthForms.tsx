@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,7 +15,7 @@ export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, isAdmin } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,10 +25,12 @@ export const LoginForm = () => {
     try {
       await signIn(email, password);
       // Redirect admin users directly to the admin panel
-      if (email === ADMIN_EMAIL) {
+      if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
         navigate('/admin');
+        console.log("Redirecting to admin panel");
       } else {
         navigate('/home');
+        console.log("Redirecting to home");
       }
     } catch (error: any) {
       console.error('Login error:', error);
@@ -95,8 +96,8 @@ export const SignupForm = () => {
         role
       });
       
+      toast.success("Account created successfully! You can now log in.");
       // Don't navigate automatically after signup since email confirmation is required
-      // We'll just show a toast message (which is handled in the AuthContext)
     } catch (error: any) {
       console.error('Registration failed:', error);
       // Error message is handled in the AuthContext
@@ -172,10 +173,6 @@ export const SignupForm = () => {
       >
         {isLoading ? 'Creating Account...' : 'Register'}
       </Button>
-      
-      <div className="text-center text-sm text-gray-500 mt-2">
-        After registration, you'll need to confirm your email before logging in
-      </div>
     </form>
   );
 };
