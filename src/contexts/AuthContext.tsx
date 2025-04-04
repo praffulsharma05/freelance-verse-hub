@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -96,15 +95,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signIn(email: string, password: string) {
     try {
       setIsLoading(true);
-      // Directly use signInWithPassword without email confirmation check
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Sign in failed",
-          description: error.message,
-        });
+        if (error.message === 'Email not confirmed') {
+          if (email === ADMIN_EMAIL) {
+            console.log("Admin login - bypassing email confirmation check");
+            const { error: secondAttemptError } = await supabase.auth.signInWithPassword({ email, password });
+            if (secondAttemptError) {
+              toast({
+                variant: "destructive",
+                title: "Sign in failed",
+                description: secondAttemptError.message,
+              });
+              throw secondAttemptError;
+            } else {
+              toast({
+                title: "Welcome Admin!",
+                description: "You've successfully signed in.",
+              });
+              return;
+            }
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Email not confirmed",
+              description: "Please check your email to confirm your account or contact support.",
+            });
+          }
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Sign in failed",
+            description: error.message,
+          });
+        }
         throw error;
       } else {
         if (email === ADMIN_EMAIL) {
@@ -147,7 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       toast({
         title: "Account created",
-        description: "Welcome to Co-Lancer! You may sign in now.",
+        description: "Welcome to Co-Lancer! Please check your email to confirm your account.",
       });
 
       return;
