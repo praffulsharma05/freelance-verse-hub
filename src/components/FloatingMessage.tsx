@@ -1,7 +1,7 @@
 
 import { MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 const FloatingMessage = () => {
   const handleClick = () => {
