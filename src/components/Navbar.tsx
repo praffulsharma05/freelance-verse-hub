@@ -1,12 +1,15 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Menu, X, User } from 'lucide-react';
+import { Search, Menu, X, User, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Navbar = ({ isAuthenticated = false }: { isAuthenticated?: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // For demo purposes, we're assuming the current user is an admin
+  const isAdmin = true;
 
   return (
     <nav className="bg-black text-white shadow-md w-full">
@@ -40,11 +43,22 @@ const Navbar = ({ isAuthenticated = false }: { isAuthenticated?: boolean }) => {
           {/* User Profile / Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
-              <Link to="/profile" className="hover:text-colancer-lightpurple transition">
-                <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
-                  <User size={20} />
-                </div>
-              </Link>
+              <div className="flex items-center space-x-4">
+                {isAdmin && (
+                  <Link 
+                    to="/admin" 
+                    className="hover:text-colancer-lightpurple transition flex items-center"
+                    title="Admin Panel"
+                  >
+                    <Shield size={20} />
+                  </Link>
+                )}
+                <Link to="/profile" className="hover:text-colancer-lightpurple transition">
+                  <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+                    <User size={20} />
+                  </div>
+                </Link>
+              </div>
             ) : (
               <Link to="/register" className="hover:text-colancer-lightpurple transition">Register</Link>
             )}
@@ -76,6 +90,12 @@ const Navbar = ({ isAuthenticated = false }: { isAuthenticated?: boolean }) => {
             <Link to="/projects" className="block py-2 hover:text-colancer-lightpurple transition">Projects</Link>
             <Link to="/circular" className="block py-2 hover:text-colancer-lightpurple transition">Circular</Link>
             <Link to="/competition" className="block py-2 hover:text-colancer-lightpurple transition">Competition</Link>
+            {isAdmin && (
+              <Link to="/admin" className="block py-2 hover:text-colancer-lightpurple transition flex items-center">
+                <Shield size={18} className="mr-2" />
+                Admin Panel
+              </Link>
+            )}
             {isAuthenticated ? (
               <Link to="/profile" className="block py-2 hover:text-colancer-lightpurple transition">Profile</Link>
             ) : (

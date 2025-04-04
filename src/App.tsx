@@ -14,6 +14,13 @@ import Profile from "./pages/Profile";
 import Wallet from "./pages/Wallet";
 import NotFound from "./pages/NotFound";
 
+// Admin Panel Imports
+import AdminLayout from "./components/AdminLayout";
+import Dashboard from "./pages/admin/Dashboard";
+import UserManagement from "./pages/admin/UserManagement";
+import ProjectManagement from "./pages/admin/ProjectManagement";
+import Settings from "./pages/admin/Settings";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -30,6 +37,15 @@ const App = () => (
           <Route path="/competition" element={<Competition />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/wallet" element={<Wallet />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="projects" element={<ProjectManagement />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
