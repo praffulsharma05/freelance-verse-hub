@@ -1,15 +1,19 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { UserRole } from '@/types/supabase';
 import { toast } from 'sonner';
 
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -17,15 +21,10 @@ export const LoginForm = () => {
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo, we'll just navigate to home on any login attempt
-      toast.success('Login successful!');
+      await signIn(email, password);
       navigate('/home');
     } catch (error) {
-      toast.error('Login failed. Please check your credentials.');
-    } finally {
+      console.error('Login error:', error);
       setIsLoading(false);
     }
   };
@@ -67,10 +66,12 @@ export const LoginForm = () => {
 
 export const SignupForm = () => {
   const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState<UserRole>('freelancer');
   const [isLoading, setIsLoading] = useState(false);
+  const { signUp } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,15 +79,15 @@ export const SignupForm = () => {
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo, we'll just navigate to home on any signup attempt
-      toast.success('Account created successfully!');
+      await signUp(email, password, {
+        username,
+        full_name: fullName,
+        role
+      });
+      toast.success('Account created successfully! Please sign in.');
       navigate('/home');
     } catch (error) {
-      toast.error('Registration failed. Please try again.');
-    } finally {
+      console.error('Registration failed:', error);
       setIsLoading(false);
     }
   };
@@ -100,6 +101,16 @@ export const SignupForm = () => {
           placeholder="johndoe"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="fullName">Full Name</Label>
+        <Input
+          id="fullName"
+          placeholder="John Doe"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
           required
         />
       </div>
@@ -123,17 +134,23 @@ export const SignupForm = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          minLength={6}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="role">Role (e.g., USER)</Label>
-        <Input
-          id="role"
-          placeholder="USER"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          required
-        />
+        <Label htmlFor="role">I am a</Label>
+        <Select 
+          value={role} 
+          onValueChange={(value) => setRole(value as UserRole)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select your role" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="freelancer">Freelancer</SelectItem>
+            <SelectItem value="client">Client</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <Button 
         type="submit" 

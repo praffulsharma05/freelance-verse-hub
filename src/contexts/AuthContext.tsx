@@ -57,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function fetchProfile(userId: string) {
     try {
       setIsLoading(true);
+      // This line had the type error - we need to use the correct query syntax
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
