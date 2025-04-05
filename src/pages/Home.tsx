@@ -32,11 +32,7 @@ const Home = () => {
           </div>
           
           <div className="md:w-1/2 flex justify-center">
-            <img 
-              src="public/lovable-uploads/f031b8ca-a39a-4d27-be3f-cba5423295b3.png" 
-              alt="Freelancer working" 
-              className="max-w-full h-auto rounded-lg"
-            />
+            
           </div>
         </div>
       </section>
