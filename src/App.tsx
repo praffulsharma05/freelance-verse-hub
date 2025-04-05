@@ -21,15 +21,13 @@ import Dashboard from "./pages/admin/Dashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import ProjectManagement from "./pages/admin/ProjectManagement";
 import Settings from "./pages/admin/Settings";
+import Finances from "./pages/admin/Finances";
 
 const queryClient = new QueryClient();
 
-// Admin email constant (must match the one in AuthContext)
-const ADMIN_EMAIL = "prafful.sharma.2021@ecajmer.ac.in";
-
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, isLoading, isAdmin } = useAuth();
+  const { user, isLoading } = useAuth();
   const location = useLocation();
   
   if (isLoading) {
@@ -39,12 +37,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (!user) {
     console.log("User not authenticated, redirecting to home");
     return <Navigate to="/" state={{ from: location }} replace />;
-  }
-  
-  // If user is admin, redirect to admin panel
-  if (isAdmin && !location.pathname.startsWith('/admin')) {
-    console.log("Admin user redirected to admin panel");
-    return <Navigate to="/admin" replace />;
   }
   
   return <>{children}</>;
@@ -96,6 +88,7 @@ const AppRoutes = () => {
         <Route index element={<Dashboard />} />
         <Route path="users" element={<UserManagement />} />
         <Route path="projects" element={<ProjectManagement />} />
+        <Route path="finances" element={<Finances />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       
